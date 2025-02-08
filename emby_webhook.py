@@ -7,8 +7,7 @@ from fastapi import FastAPI, Request
 
 from config.settings import (
     WEBHOOK_HOST,
-    WEBHOOK_PORT,
-    get_telegram_bot_instance
+    WEBHOOK_PORT
 )
 from handlers.webhook_handler import WebhookHandler
 from models.webhook import EmbyWebhook

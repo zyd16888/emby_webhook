@@ -39,7 +39,7 @@ class MediaItem(BaseModel):
     ServerId: str
     Id: str
     DateCreated: str
-    Container: str
+    Container: Optional[str] = None
     SortName: str
     PremiereDate: str
     ExternalUrls: List[ExternalUrl] = Field(default_factory=lambda: [])
@@ -49,9 +49,9 @@ class MediaItem(BaseModel):
     Taglines: List[str] = Field(default_factory=lambda: [])
     Genres: List[str] = Field(default_factory=lambda: [])
     RunTimeTicks: Optional[int] = None
-    Size: int
+    Size: Optional[int] = None
     FileName: str
-    Bitrate: int
+    Bitrate: Optional[int] = None
     ProductionYear: Optional[int] = None
     RemoteTrailers: List[str] = Field(default_factory=lambda: [])
     ProviderIds: Optional[dict] = None
