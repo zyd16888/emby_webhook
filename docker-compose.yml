@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  emby_webhook:
+    image: your-dockerhub-username/emby_webhook:latest
+    container_name: emby_webhook
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./logs:/app/logs
+    # 如果您有 .env 文件来存放环境变量，可以取消下面的注释
+    # env_file:
+    #   - .env 
