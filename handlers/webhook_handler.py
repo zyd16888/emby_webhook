@@ -1,4 +1,5 @@
 import aiohttp
+import re
 
 from config.settings import EMBY_URL, EMBY_API_KEY, WEBHOOK_CHANNEL_ID, TELEGRAM_BOT_TOKEN
 from models import EmbyWebhook
@@ -12,13 +13,39 @@ class WebhookHandler():
         self.logger = Logger().get_logger()
         self.telegram_api_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}"
 
+    def clean_html_text(self, text: str) -> str:
+        """
+        清理 HTML 标签，转换为 Telegram 支持的格式
+        """
+        if not text:
+            return ""
+        
+        # 替换常见的 HTML 标签
+        text = re.sub(r'<br\s*/?>', '\n', text, flags=re.IGNORECASE)
+        text = re.sub(r'<p[^>]*>', '\n', text, flags=re.IGNORECASE)
+        text = re.sub(r'</p>', '\n', text, flags=re.IGNORECASE)
+        text = re.sub(r'<[^>]+>', '', text)  # 移除其他 HTML 标签
+        
+        # 清理多余的换行符
+        text = re.sub(r'\n\s*\n', '\n\n', text)
+        text = text.strip()
+        
+        return text
+
     async def send_new_media_notification(self, webhook: EmbyWebhook) -> None:
         """
         通过 Telegram API 发送新媒体通知到指定频道
         """
+        if not webhook.Item:
+            self.logger.error("Webhook 数据中没有 Item 信息")
+            return
+            
         item = webhook.Item
+        
         # 获取图片URL
-        primary_image = item.get_backdrop_url(EMBY_URL, EMBY_API_KEY, 0)
+        primary_image = None
+        if EMBY_URL and EMBY_API_KEY:
+            primary_image = item.get_backdrop_url(EMBY_URL, EMBY_API_KEY, 0)
 
         # 构建消息文本
         message = (
@@ -29,7 +56,10 @@ class WebhookHandler():
         )
 
         if item.Overview:
-            message += f"\n📖 <b>简介:</b>\n{item.Overview}\n"
+            # 清理 HTML 标签
+            clean_overview = self.clean_html_text(item.Overview)
+            if clean_overview:
+                message += f"\n📖 <b>简介:</b>\n{clean_overview}\n"
 
         if item.Studios:
             studios = ', '.join(studio.Name for studio in item.Studios)
