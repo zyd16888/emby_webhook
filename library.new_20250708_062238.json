@@ -1,0 +1,143 @@
+{
+  "Title": "新 MOND-158 与暗恋的女上司一起 武藤彩香 武藤彩香 在 游骑兵Emby",
+  "Description": "2025年7月6日星期日 下午2:51\n\n这个月老样子要常加班，不过我暗恋的武藤彩香也在就怎样都没关係。终于把事情处理完后，理所当然地也没车可以搭了。不知道为什么聊着聊着，就跟她在公司喝了起来…。",
+  "Date": "2025-07-06T06:51:33.9086133Z",
+  "Event": "library.new",
+  "Item": {
+    "Name": "MOND-158 与暗恋的女上司一起 武藤彩香 武藤彩香",
+    "OriginalTitle": "MOND-158 与暗恋的女上司一起 武藤彩香",
+    "ServerId": "4efd01cd257b44fcaf914b891ff8d194",
+    "Id": "3584",
+    "DateCreated": "2025-07-05T14:01:49.5000000Z",
+    "Container": "mkv",
+    "SortName": "MOND-158 与暗恋的女上司一起 武藤彩香 武藤彩香",
+    "PremiereDate": "2018-12-26T16:00:00.0000000Z",
+    "ExternalUrls": [],
+    "Path": "/me/matched/collection/2018/MOND/MOND-158/MOND-158-C.mkv",
+    "OfficialRating": "JP-18+",
+    "CustomRating": "JP-18+",
+    "Overview": "这个月老样子要常加班，不过我暗恋的武藤彩香也在就怎样都没关係。终于把事情处理完后，理所当然地也没车可以搭了。不知道为什么聊着聊着，就跟她在公司喝了起来…。",
+    "Taglines": [
+      "发行日期: 2018-12-27"
+    ],
+    "Genres": [
+      "中文字幕",
+      "第一放送",
+      "憧れの女上司と",
+      "单体作品",
+      "熟女",
+      "各种职业",
+      "人妻",
+      "白天出轨",
+      "恋爱"
+    ],
+    "RunTimeTicks": 77065600000,
+    "Size": 5962557805,
+    "FileName": "MOND-158-C.mkv",
+    "Bitrate": 6189592,
+    "ProductionYear": 2018,
+    "RemoteTrailers": [],
+    "ProviderIds": {},
+    "IsFolder": false,
+    "ParentId": "3583",
+    "Type": "Movie",
+    "Studios": [
+      {
+        "Name": "タカラ映像",
+        "Id": 44
+      }
+    ],
+    "GenreItems": [
+      {
+        "Name": "中文字幕",
+        "Id": 33
+      },
+      {
+        "Name": "第一放送",
+        "Id": 3677
+      },
+      {
+        "Name": "憧れの女上司と",
+        "Id": 3678
+      },
+      {
+        "Name": "单体作品",
+        "Id": 39
+      },
+      {
+        "Name": "熟女",
+        "Id": 41
+      },
+      {
+        "Name": "各种职业",
+        "Id": 323
+      },
+      {
+        "Name": "人妻",
+        "Id": 40
+      },
+      {
+        "Name": "白天出轨",
+        "Id": 276
+      },
+      {
+        "Name": "恋爱",
+        "Id": 259
+      }
+    ],
+    "TagItems": [
+      {
+        "Name": "中文字幕",
+        "Id": 45
+      },
+      {
+        "Name": "第一放送",
+        "Id": 3679
+      },
+      {
+        "Name": "憧れの女上司と",
+        "Id": 3680
+      },
+      {
+        "Name": "单体作品",
+        "Id": 51
+      },
+      {
+        "Name": "熟女",
+        "Id": 53
+      },
+      {
+        "Name": "各种职业",
+        "Id": 325
+      },
+      {
+        "Name": "人妻",
+        "Id": 52
+      },
+      {
+        "Name": "白天出轨",
+        "Id": 278
+      },
+      {
+        "Name": "恋爱",
+        "Id": 262
+      }
+    ],
+    "PrimaryImageAspectRatio": 0.707089552238806,
+    "ImageTags": {
+      "Primary": "38ee818312973aa7ecad6a2369dad09e",
+      "Thumb": "f8e128d241a7cdb6f4e9140819c832f0"
+    },
+    "BackdropImageTags": [
+      "fd313806829c59e3b5972f75cd7bfc9f"
+    ],
+    "MediaType": "Video",
+    "Width": 1920,
+    "Height": 1080
+  },
+  "Server": {
+    "Name": "游骑兵Emby",
+    "Id": "4efd01cd257b44fcaf914b891ff8d194",
+    "Version": "4.8.11.0"
+  }
+}

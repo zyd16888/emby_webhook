@@ -1,4 +1,5 @@
 from datetime import timezone, datetime, timedelta
+from typing import Optional
 
 from utils.logger import Logger
 
@@ -38,3 +39,25 @@ def escape_markdown_v2(text: str) -> str:
     for char in need_escape:
         text = text.replace(char, f'\\{char}')
     return text
+
+
+def format_runtime(ticks: Optional[int]) -> str:
+    """将 RunTimeTicks 转换为 HH:MM:SS 格式"""
+    if ticks is None:
+        return "未知"
+    seconds = ticks / 10_000_000
+    hours = int(seconds // 3600)
+    minutes = int((seconds % 3600) // 60)
+    seconds = int(seconds % 60)
+    return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+
+
+def format_size(size_bytes: Optional[int]) -> str:
+    """将字节转换为 GB 或 MB"""
+    if size_bytes is None:
+        return "未知"
+    gb = size_bytes / (1024**3)
+    if gb >= 1:
+        return f"{gb:.2f} GB"
+    mb = size_bytes / (1024**2)
+    return f"{mb:.2f} MB"

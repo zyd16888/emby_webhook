@@ -1,9 +1,10 @@
 import aiohttp
 import re
+import json
 
 from config.settings import EMBY_URL, EMBY_API_KEY, WEBHOOK_CHANNEL_ID, TELEGRAM_BOT_TOKEN
 from models import EmbyWebhook
-from utils.helpers import parse_emby_date
+from utils.helpers import parse_emby_date, format_runtime, format_size
 from utils.logger import Logger
 
 
@@ -21,7 +22,7 @@ class WebhookHandler():
             return ""
         
         # 替换常见的 HTML 标签
-        text = re.sub(r'<br\s*/?>', '\n', text, flags=re.IGNORECASE)
+        text = re.sub(r'<br\s*?>', '\n', text, flags=re.IGNORECASE)
         text = re.sub(r'<p[^>]*>', '\n', text, flags=re.IGNORECASE)
         text = re.sub(r'</p>', '\n', text, flags=re.IGNORECASE)
         text = re.sub(r'<[^>]+>', '', text)  # 移除其他 HTML 标签
@@ -31,6 +32,27 @@ class WebhookHandler():
         text = text.strip()
         
         return text
+
+    async def get_library_name(self, library_id: str) -> str:
+        """
+        通过媒体库ID获取媒体库名称
+        """
+        if not EMBY_URL or not EMBY_API_KEY:
+            return "未知媒体库"
+
+        url = f"{EMBY_URL}/emby/Items/{library_id}?api_key={EMBY_API_KEY}"
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url) as response:
+                    if response.ok:
+                        data = await response.json()
+                        return data.get("Name", "未知媒体库")
+                    else:
+                        self.logger.error(f"获取媒体库名称失败: {response.status}")
+                        return "未知媒体库"
+        except Exception as e:
+            self.logger.error(f"获取媒体库名称时发生错误: {str(e)}")
+            return "未知媒体库"
 
     async def send_new_media_notification(self, webhook: EmbyWebhook) -> None:
         """
@@ -42,6 +64,9 @@ class WebhookHandler():
             
         item = webhook.Item
         
+        # 获取媒体库名称
+        library_name = await self.get_library_name(item.ParentId)
+
         # 获取图片URL
         primary_image = None
         if EMBY_URL and EMBY_API_KEY:
@@ -51,15 +76,20 @@ class WebhookHandler():
         message = (
             f"🎬 <b>新片入库</b>\n\n"
             f"📝 <b>标题:</b> {item.Name}\n"
+            f"📚 <b>媒体库:</b> {library_name}\n"
             f"🗓️ <b>发行日期:</b> {parse_emby_date(item.PremiereDate)}\n"
             f"⏱ <b>入库时间:</b> {parse_emby_date(item.DateCreated)}\n"
+            f"💎 <b>分辨率:</b> {item.Width}x{item.Height}\n"
+            f"⏳ <b>时  长:</b> {format_runtime(item.RunTimeTicks)}\n"
+            f"📦 <b>大  小:</b> {format_size(item.Size)}\n"
+            f"🎞️ <b>类  型:</b> {item.Container.upper() if item.Container else '未知'}"
         )
 
         if item.Overview:
             # 清理 HTML 标签
             clean_overview = self.clean_html_text(item.Overview)
             if clean_overview:
-                message += f"\n📖 <b>简介:</b>\n{clean_overview}\n"
+                message += f"\n\n📖 <b>简介:</b>\n{clean_overview}\n"
 
         if item.Studios:
             studios = ', '.join(studio.Name for studio in item.Studios)
@@ -69,9 +99,17 @@ class WebhookHandler():
             tags = ', '.join(tag.Name for tag in item.TagItems)
             message += f"\n🏷 <b>标签:</b> {tags}"
 
-        if item.Genres:
-            genres = ', '.join(genre for genre in item.Genres)
-            message += f"\n🎞️ <b>类型:</b> {genres}"
+        # 构建 Inline Keyboard
+        keyboard = {
+            "inline_keyboard": [
+                [
+                    {
+                        "text": "在 Emby 中查看",
+                        "url": f"{EMBY_URL}/web/index.html#!/item?id={item.Id}&serverId={item.ServerId}"
+                    }
+                ]
+            ]
+        }
 
         # 发送消息
         try:
@@ -83,7 +121,8 @@ class WebhookHandler():
                         "chat_id": WEBHOOK_CHANNEL_ID,
                         "photo": primary_image,
                         "caption": message,
-                        "parse_mode": "HTML"
+                        "parse_mode": "HTML",
+                        "reply_markup": json.dumps(keyboard)
                     }
                 else:
                     # 发送纯文本消息
@@ -91,7 +130,8 @@ class WebhookHandler():
                     data = {
                         "chat_id": WEBHOOK_CHANNEL_ID,
                         "text": message,
-                        "parse_mode": "HTML"
+                        "parse_mode": "HTML",
+                        "reply_markup": json.dumps(keyboard)
                     }
                 
                 async with session.post(endpoint, json=data) as response:
