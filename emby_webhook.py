@@ -12,12 +12,16 @@ from config.settings import (
 from handlers.webhook_handler import WebhookHandler
 from models.webhook import EmbyWebhook
 from utils.logger import Logger
+from utils.message_queue import MessageQueue
 
 # 配置日志
 logger = Logger().get_logger()
 
 # 创建 webhook handler
 webhook_handler = WebhookHandler()
+
+# 创建消息队列
+message_queue = MessageQueue()
 
 # 创建存储目录
 NOTIFICATION_DIR = Path("../notifications")
@@ -55,11 +59,15 @@ def create_webhook_app() -> FastAPI:
 
             # 根据事件类型处理
             if webhook_data.Event == 'library.new':
-                await webhook_handler.send_new_media_notification(webhook_data)
+                # 将消息添加到队列而不是直接发送
+                await message_queue.add_message({
+                    'webhook_data': data,
+                    'event_type': webhook_data.Event
+                })
 
             return {
                 "status": "success",
-                "message": f"Successfully processed {webhook_data.Event} event",
+                "message": f"Successfully queued {webhook_data.Event} event",
                 "title": webhook_data.Title
             }
 
@@ -77,6 +85,9 @@ def create_webhook_app() -> FastAPI:
 
 async def run_emby_webhook_server():
     """运行 Webhook 服务器"""
+    # 启动消息队列处理器
+    await message_queue.start_processing()
+    
     app = create_webhook_app()
     config = uvicorn.Config(
         app,
@@ -85,4 +96,8 @@ async def run_emby_webhook_server():
         reload=True
     )
     server = uvicorn.Server(config)
-    await server.serve()
+    try:
+        await server.serve()
+    finally:
+        # 停止消息队列处理器
+        await message_queue.stop_processing()

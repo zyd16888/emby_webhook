@@ -1,6 +1,7 @@
 import aiohttp
 import re
 import json
+import asyncio
 
 from config.settings import EMBY_URL, EMBY_API_KEY, WEBHOOK_CHANNEL_ID, TELEGRAM_BOT_TOKEN
 from models import EmbyWebhook
@@ -89,6 +90,37 @@ class WebhookHandler():
             self.logger.error(f"获取媒体文件夹列表时发生错误: {str(e)}")
             return "未知媒体库"
 
+    async def send_telegram_message_with_retry(self, session, endpoint, data, max_retries=3):
+        """
+        发送 Telegram 消息，支持重试和速率限制处理
+        """
+        for attempt in range(max_retries):
+            try:
+                async with session.post(endpoint, json=data) as response:
+                    if response.status == 429:  # 速率限制错误
+                        response_json = await response.json()
+                        retry_after = response_json.get('parameters', {}).get('retry_after', 30)
+                        self.logger.warning(f"Telegram API 速率限制: 需要等待 {retry_after} 秒")
+                        await asyncio.sleep(retry_after)
+                        continue  # 重试
+                    
+                    if not response.ok:
+                        response_text = await response.text()
+                        self.logger.error(f"发送通知消息失败: {response_text}")
+                        # 如果是客户端错误(4xx)，不重试
+                        if 400 <= response.status < 500:
+                            break
+                    
+                    return response
+                    
+            except Exception as e:
+                self.logger.error(f"发送通知消息时发生异常: {str(e)}")
+                if attempt == max_retries - 1:  # 最后一次尝试
+                    raise
+                await asyncio.sleep(2 ** attempt)  # 指数退避
+        
+        return None
+
     async def send_new_media_notification(self, webhook: EmbyWebhook) -> None:
         """
         通过 Telegram API 发送新媒体通知到指定频道
@@ -169,10 +201,10 @@ class WebhookHandler():
                         # "reply_markup": json.dumps(keyboard)
                     }
 
-                async with session.post(endpoint, json=data) as response:
-                    if not response.ok:
-                        response_text = await response.text()
-                        self.logger.error(f"发送通知消息失败: {response_text}")
+                response = await self.send_telegram_message_with_retry(session, endpoint, data)
+                if response and not response.ok:
+                    response_text = await response.text()
+                    self.logger.error(f"发送通知消息最终失败: {response_text}")
 
         except Exception as e:
             self.logger.error(f"发送通知消息失败: {str(e)}")
