@@ -100,7 +100,7 @@ class WebhookHandler():
         item = webhook.Item
 
         # 获取媒体库名称
-        library_name = await self.get_library_name(item.ParentId)
+        # library_name = await self.get_library_name(item.ParentId)
 
         # 获取图片URL
         primary_image = None
@@ -111,7 +111,7 @@ class WebhookHandler():
         message = (
             f"🎬 <b>新片入库</b>\n\n"
             f"📝 <b>标题:</b> {item.Name}\n"
-            f"📚 <b>媒体库:</b> {library_name}\n"
+            # f"📚 <b>媒体库:</b> {library_name}\n"
             f"🗓️ <b>发行日期:</b> {parse_emby_date(item.PremiereDate)}\n"
             f"⏱ <b>入库时间:</b> {parse_emby_date(item.DateCreated)}\n"
             f"💎 <b>分辨率:</b> {item.Width}x{item.Height}\n"
