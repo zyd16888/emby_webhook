@@ -20,17 +20,17 @@ class WebhookHandler():
         """
         if not text:
             return ""
-        
+
         # 替换常见的 HTML 标签
         text = re.sub(r'<br\s*?>', '\n', text, flags=re.IGNORECASE)
         text = re.sub(r'<p[^>]*>', '\n', text, flags=re.IGNORECASE)
         text = re.sub(r'</p>', '\n', text, flags=re.IGNORECASE)
         text = re.sub(r'<[^>]+>', '', text)  # 移除其他 HTML 标签
-        
+
         # 清理多余的换行符
         text = re.sub(r'\n\s*\n', '\n\n', text)
         text = text.strip()
-        
+
         return text
 
     async def get_library_name(self, library_id: str) -> str:
@@ -96,9 +96,9 @@ class WebhookHandler():
         if not webhook.Item:
             self.logger.error("Webhook 数据中没有 Item 信息")
             return
-            
+
         item = webhook.Item
-        
+
         # 获取媒体库名称
         library_name = await self.get_library_name(item.ParentId)
 
@@ -157,7 +157,7 @@ class WebhookHandler():
                         "photo": primary_image,
                         "caption": message,
                         "parse_mode": "HTML",
-                        "reply_markup": json.dumps(keyboard)
+                        # "reply_markup": json.dumps(keyboard)
                     }
                 else:
                     # 发送纯文本消息
@@ -166,13 +166,13 @@ class WebhookHandler():
                         "chat_id": WEBHOOK_CHANNEL_ID,
                         "text": message,
                         "parse_mode": "HTML",
-                        "reply_markup": json.dumps(keyboard)
+                        # "reply_markup": json.dumps(keyboard)
                     }
-                
+
                 async with session.post(endpoint, json=data) as response:
                     if not response.ok:
                         response_text = await response.text()
                         self.logger.error(f"发送通知消息失败: {response_text}")
-                        
+
         except Exception as e:
             self.logger.error(f"发送通知消息失败: {str(e)}")
