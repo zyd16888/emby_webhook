@@ -40,18 +40,53 @@ class WebhookHandler():
         if not EMBY_URL or not EMBY_API_KEY:
             return "未知媒体库"
 
+        # 首先尝试通过 Items 端点获取
         url = f"{EMBY_URL}/emby/Items/{library_id}?api_key={EMBY_API_KEY}"
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.get(url) as response:
                     if response.ok:
                         data = await response.json()
+                        # 检查是否为媒体库类型
+                        if data.get("Type") in ["CollectionFolder", "Folder"]:
+                            return data.get("Name", "未知媒体库")
+                        # 如果不是媒体库类型，尝试获取其父级
+                        parent_id = data.get("ParentId")
+                        if parent_id:
+                            return await self.get_library_name(parent_id)
                         return data.get("Name", "未知媒体库")
                     else:
                         self.logger.error(f"获取媒体库名称失败: {response.status}")
-                        return "未知媒体库"
+                        # 如果直接获取失败，尝试通过媒体文件夹列表获取
+                        return await self.get_library_name_from_folders(library_id)
         except Exception as e:
             self.logger.error(f"获取媒体库名称时发生错误: {str(e)}")
+            # 如果直接获取失败，尝试通过媒体文件夹列表获取
+            return await self.get_library_name_from_folders(library_id)
+
+    async def get_library_name_from_folders(self, library_id: str) -> str:
+        """
+        通过查询媒体文件夹列表获取媒体库名称
+        """
+        if not EMBY_URL or not EMBY_API_KEY:
+            return "未知媒体库"
+
+        url = f"{EMBY_URL}/emby/Library/MediaFolders?api_key={EMBY_API_KEY}"
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url) as response:
+                    if response.ok:
+                        data = await response.json()
+                        items = data.get("Items", [])
+                        for item in items:
+                            if item.get("Id") == library_id:
+                                return item.get("Name", "未知媒体库")
+                        return "未知媒体库"
+                    else:
+                        self.logger.error(f"获取媒体文件夹列表失败: {response.status}")
+                        return "未知媒体库"
+        except Exception as e:
+            self.logger.error(f"获取媒体文件夹列表时发生错误: {str(e)}")
             return "未知媒体库"
 
     async def send_new_media_notification(self, webhook: EmbyWebhook) -> None:
