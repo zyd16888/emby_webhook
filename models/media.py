@@ -38,10 +38,10 @@ class MediaItem(BaseModel):
     OriginalTitle: Optional[str] = None
     ServerId: str
     Id: str
-    DateCreated: str
+    DateCreated: Optional[str] = None
     Container: Optional[str] = None
     SortName: str
-    PremiereDate: str
+    PremiereDate: Optional[str] = None
     ExternalUrls: List[ExternalUrl] = Field(default_factory=lambda: [])
     Path: str
     OfficialRating: Optional[str] = None
@@ -81,7 +81,7 @@ class MediaItem(BaseModel):
 - 大小: {self.Size:,} bytes
 - 分辨率: {self.Width}x{self.Height if self.Width and self.Height else '未知'}
 - 比特率: {self.Bitrate}
-- 发行日期: {self.PremiereDate.strftime('%Y-%m-%d') if self.PremiereDate else '未知'}
+- 发行日期: {self.PremiereDate if self.PremiereDate else '未知'}
 - 入库日期: {self.DateCreated.strftime('%Y-%m-%d %H:%M:%S')}
 - 年份: {self.ProductionYear or '未知'}
 - 制作公司: {', '.join(studio.Name for studio in self.Studios)}

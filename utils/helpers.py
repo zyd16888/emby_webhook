@@ -6,8 +6,11 @@ from utils.logger import Logger
 logger = Logger().get_logger()
 
 
-def parse_emby_date(date_str: str) -> datetime:
+def parse_emby_date(date_str: Optional[str]) -> str:
     """Parse Emby date format to datetime object and convert to UTC+8"""
+    if not date_str:
+        return "未知"
+        
     tz_utc8 = timezone(timedelta(hours=8))
 
     try:
@@ -27,10 +30,10 @@ def parse_emby_date(date_str: str) -> datetime:
         utc_time = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
 
         # 转换为UTC+8
-        return utc_time.astimezone(tz_utc8)
+        return utc_time.astimezone(tz_utc8).strftime('%Y-%m-%d %H:%M:%S')
     except Exception as e:
         logger.error(f"Error parsing date {date_str}: {e}")
-        return datetime.now(tz_utc8)
+        return "未知"
 
 
 def escape_markdown_v2(text: str) -> str:

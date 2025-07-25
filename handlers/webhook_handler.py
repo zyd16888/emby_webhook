@@ -34,10 +34,20 @@ class WebhookHandler():
 
         return text
 
-    async def get_library_name(self, library_id: str) -> str:
+    async def get_library_name(self, library_id: str, visited_ids: set = None) -> str:
         """
         通过媒体库ID获取媒体库名称
         """
+        if visited_ids is None:
+            visited_ids = set()
+
+        # 防止无限递归
+        if library_id in visited_ids:
+            self.logger.warning(f"检测到循环引用，媒体库ID: {library_id}")
+            return "未知媒体库"
+
+        visited_ids.add(library_id)
+
         if not EMBY_URL or not EMBY_API_KEY:
             return "未知媒体库"
 
@@ -53,8 +63,8 @@ class WebhookHandler():
                             return data.get("Name", "未知媒体库")
                         # 如果不是媒体库类型，尝试获取其父级
                         parent_id = data.get("ParentId")
-                        if parent_id:
-                            return await self.get_library_name(parent_id)
+                        if parent_id and parent_id != library_id:
+                            return await self.get_library_name(parent_id, visited_ids)
                         return data.get("Name", "未知媒体库")
                     else:
                         self.logger.error(f"获取媒体库名称失败: {response.status}")
@@ -103,22 +113,22 @@ class WebhookHandler():
                         self.logger.warning(f"Telegram API 速率限制: 需要等待 {retry_after} 秒")
                         await asyncio.sleep(retry_after)
                         continue  # 重试
-                    
+
                     if not response.ok:
                         response_text = await response.text()
                         self.logger.error(f"发送通知消息失败: {response_text}")
                         # 如果是客户端错误(4xx)，不重试
                         if 400 <= response.status < 500:
                             break
-                    
+
                     return response
-                    
+
             except Exception as e:
                 self.logger.error(f"发送通知消息时发生异常: {str(e)}")
                 if attempt == max_retries - 1:  # 最后一次尝试
                     raise
                 await asyncio.sleep(2 ** attempt)  # 指数退避
-        
+
         return None
 
     async def send_new_media_notification(self, webhook: EmbyWebhook) -> None:
@@ -135,9 +145,13 @@ class WebhookHandler():
         # library_name = await self.get_library_name(item.ParentId)
 
         # 获取图片URL
-        primary_image = None
+        image_url = None
         if EMBY_URL and EMBY_API_KEY:
-            primary_image = item.get_backdrop_url(EMBY_URL, EMBY_API_KEY, 0)
+            # 首先尝试获取背景图
+            image_url = item.get_backdrop_url(EMBY_URL, EMBY_API_KEY, 0)
+            # 如果没有背景图，回退到主封面图
+            if not image_url:
+                image_url = item.get_primary_image_url(EMBY_URL, EMBY_API_KEY)
 
         # 构建消息文本
         message = (
@@ -181,12 +195,12 @@ class WebhookHandler():
         # 发送消息
         try:
             async with aiohttp.ClientSession() as session:
-                if primary_image:
+                if image_url:
                     # 发送图文消息
                     endpoint = f"{self.telegram_api_url}/sendPhoto"
                     data = {
                         "chat_id": WEBHOOK_CHANNEL_ID,
-                        "photo": primary_image,
+                        "photo": image_url,
                         "caption": message,
                         "parse_mode": "HTML",
                         # "reply_markup": json.dumps(keyboard)
