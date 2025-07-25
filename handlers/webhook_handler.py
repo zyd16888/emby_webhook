@@ -146,12 +146,12 @@ class WebhookHandler():
 
         # 获取图片URL
         image_url = None
-        if EMBY_URL and EMBY_API_KEY:
-            # 首先尝试获取背景图
-            image_url = item.get_backdrop_url(EMBY_URL, EMBY_API_KEY, 0)
-            # 如果没有背景图，回退到主封面图
-            if not image_url:
-                image_url = item.get_primary_image_url(EMBY_URL, EMBY_API_KEY)
+        # if EMBY_URL and EMBY_API_KEY:
+        # 首先尝试获取背景图
+        image_url = item.get_backdrop_url(EMBY_URL, EMBY_API_KEY, 0)
+        # 如果没有背景图，回退到主封面图
+        if not image_url:
+            image_url = item.get_primary_image_url(EMBY_URL, EMBY_API_KEY)
 
         # 构建消息文本
         message = (

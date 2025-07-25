@@ -90,18 +90,19 @@ class MediaItem(BaseModel):
 
     def get_primary_image_url(self, server_url: str, api_key: str) -> Optional[str]:
         """获取主要封面图的URL"""
-        if not self.ImageTags or 'Primary' not in self.ImageTags:
+        if not self.ImageTags or not self.ImageTags.Primary:
             return None
         return f"{server_url}/emby/Items/{self.Id}/Images/Primary?api_key={api_key}"
 
     def get_backdrop_url(self, server_url: str, api_key: str, index: int = 0) -> Optional[str]:
         """获取背景图的URL"""
         if not self.BackdropImageTags or index >= len(self.BackdropImageTags):
-            return None
+            # 回退到使用主封面图
+            return self.get_primary_image_url(server_url, api_key)
         return f"{server_url}/emby/Items/{self.Id}/Images/Backdrop/{index}?api_key={api_key}"
 
     def get_thumbnail_url(self, server_url: str, api_key: str) -> Optional[str]:
         """获取缩略图URL"""
-        if not self.ImageTags or 'Thumb' not in self.ImageTags:
+        if not self.ImageTags or not self.ImageTags.Thumb:
             return None
         return f"{server_url}/emby/Items/{self.Id}/Images/Thumb?api_key={api_key}"
