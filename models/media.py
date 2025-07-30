@@ -19,6 +19,10 @@ class Tag(BaseModel):
     Id: int
 
 
+class RemoteTrailer(BaseModel):
+    Url: str
+
+
 class ImageTag(BaseModel):
     Primary: Optional[str] = None
     Thumb: Optional[str] = None
@@ -53,7 +57,7 @@ class MediaItem(BaseModel):
     FileName: str
     Bitrate: Optional[int] = None
     ProductionYear: Optional[int] = None
-    RemoteTrailers: List[str] = Field(default_factory=lambda: [])
+    RemoteTrailers: List[RemoteTrailer] = Field(default_factory=lambda: [])
     ProviderIds: Optional[dict] = None
     IsFolder: bool
     ParentId: str
