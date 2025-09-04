@@ -1,5 +1,6 @@
 import asyncio
 import json
+import random
 from collections import deque
 from typing import Dict, Any
 from datetime import datetime
@@ -63,6 +64,11 @@ class MessageQueue:
                     logger.info(f"处理队列中的消息，剩余队列长度: {len(self.queue)}")
                     # 处理消息
                     await self._process_message(webhook_handler, message_data)
+                    
+                    # 添加随机3-20秒延迟
+                    delay = random.uniform(3, 20)
+                    logger.info(f"消息发送完成，等待 {delay:.2f} 秒后继续处理下一条消息")
+                    await asyncio.sleep(delay)
                 else:
                     # 如果队列为空，短暂休眠
                     await asyncio.sleep(0.1)
