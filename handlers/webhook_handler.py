@@ -177,7 +177,7 @@ class WebhookHandler():
             message += f"\n🏢 <b>制作公司:</b> {studios}"
 
         if item.TagItems:
-            tags = ', '.join(tag.Name for tag in item.TagItems)
+            tags = ' '.join(f"#{tag.Name}" for tag in item.TagItems)
             message += f"\n🏷 <b>标签:</b> {tags}"
 
         # 构建 Inline Keyboard
