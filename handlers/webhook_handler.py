@@ -173,7 +173,7 @@ class WebhookHandler():
                 message += f"\n\n📖 <b>简介:</b>\n{clean_overview}\n"
 
         if item.Studios:
-            studios = ', '.join(studio.Name for studio in item.Studios)
+            studios = ", ".join(f"#{studio.Name}" for studio in item.Studios)
             message += f"\n🏢 <b>制作公司:</b> {studios}"
 
         if item.TagItems:
