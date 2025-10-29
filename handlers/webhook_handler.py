@@ -5,7 +5,7 @@ import asyncio
 
 from config.settings import EMBY_URL, EMBY_API_KEY, WEBHOOK_CHANNEL_ID, TELEGRAM_BOT_TOKEN
 from models import EmbyWebhook
-from utils.helpers import parse_emby_date, format_runtime, format_size
+from utils.helpers import parse_emby_date, format_runtime, format_size, format_telegram_hashtag
 from utils.logger import Logger
 
 
@@ -177,8 +177,14 @@ class WebhookHandler():
             message += f"\n🏢 <b>制作公司:</b> {studios}"
 
         if item.TagItems:
-            tags = ' '.join(f"#{tag.Name}" for tag in item.TagItems)
-            message += f"\n🏷 <b>标签:</b> {tags}"
+            hashtags = []
+            for tag in item.TagItems:
+                sanitized = format_telegram_hashtag(tag.Name)
+                if sanitized:
+                    hashtags.append(f"#{sanitized}")
+            if hashtags:
+                tags = ' '.join(hashtags)
+                message += f"\n🏷 <b>标签:</b> {tags}"
 
         # 构建 Inline Keyboard
         keyboard = {

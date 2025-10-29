@@ -1,3 +1,4 @@
+import re
 from datetime import timezone, datetime, timedelta
 from typing import Optional
 
@@ -64,3 +65,21 @@ def format_size(size_bytes: Optional[int]) -> str:
         return f"{gb:.2f} GB"
     mb = size_bytes / (1024**2)
     return f"{mb:.2f} MB"
+
+
+def format_telegram_hashtag(label: Optional[str]) -> str:
+    """将标签名称转换为 Telegram 可用的 Hashtag"""
+    if not label:
+        return ""
+
+    sanitized = label.strip()
+    if not sanitized:
+        return ""
+
+    sanitized = sanitized.replace('：', ':')
+    sanitized = re.sub(r'\s*:\s*', '_', sanitized)
+    sanitized = re.sub(r'\s+', '_', sanitized)
+    sanitized = re.sub(r'[^\w\u4e00-\u9fff_]', '', sanitized)
+    sanitized = re.sub(r'_+', '_', sanitized).strip('_')
+
+    return sanitized
